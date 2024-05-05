@@ -1,3 +1,4 @@
+import path from "path";
 import express from "express";
 import authRoutes from "./routes/auth.route.js"
 import userRoutes from "./routes/user.route.js"
@@ -16,6 +17,7 @@ cloudinary.config({
 })
 const app = express();
 const PORT =process.env.PORT || 8000;
+const __dirname = path.resolve();
 
 app.use(express.json({limit:"5mb"}));  //to parse req.body
 app.use(express.urlencoded({extended:true}));
@@ -25,6 +27,15 @@ app.use("/api/auth",authRoutes);
 app.use("/api/users",userRoutes);
 app.use("/api/posts",postRoutes);
 app.use("/api/notifications",notificationRoutes);
+
+if (process.env.NODE_ENV === "production") {
+	app.use(express.static(path.join(__dirname, "/frontend/dist")));
+
+	app.get("*", (req, res) => {
+		res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"));
+	});
+}
+
 
 app.listen(PORT,()=>{
     console.log(`server is runing on port ${PORT}`);
